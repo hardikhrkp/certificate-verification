@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FITCS Certificate Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #343a40;
+            color: white;
+            text-align: center;
+            padding: 1em;
+        }
+        h1 {
+            margin: 0;
+        }
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .verified {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .not-verified {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>FITCS Certificate Verification</h1>
+</header>
+
+<div class="container">
+    <h2>Enter Certificate Number</h2>
+    <div class="form-group">
+        <label for="certNo">Certificate No:</label>
+        <input type="text" id="certNo" placeholder="Enter certificate number" required>
+    </div>
+    <button onclick="verifyCertificate()">Verify Certificate</button>
+
+    <!-- Display the Checking status while waiting for the response -->
+    <div id="loading" class="loading" style="display:none;">Checking...</div>
+
+    <div id="result" class="result" style="display:none;"></div>
+</div>
+
+<script>
+    function verifyCertificate() {
+        var certNo = document.getElementById('certNo').value.trim();
+
+        if (!certNo) {
+            alert("Please enter a certificate number.");
+            return;
+        }
+
+        // Show the "Checking..." status
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('result').style.display = 'none'; // Hide the previous result if any
+
+        var url = `https://script.google.com/macros/s/AKfycbwjXJq6-A1iTQQ--DYLt4fDDLXZFOXzCHEWYN_Z1BxprG9fZDuT2hGwy0ikmhIbKDnicA/exec?cert_no=${certNo}`;
+
+        // Make the API call to the Google Apps Script Web App
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                var resultDiv = document.getElementById('result');
+                var loadingDiv = document.getElementById('loading');
+                
+                // Hide the loading status
+                loadingDiv.style.display = 'none';
+
+                // Show the result
+                if (data.verified) {
+                    resultDiv.className = 'result verified';
+                    resultDiv.innerHTML = `<strong>Certificate Verified:</strong><br>
+                        <strong>Certificate No:</strong> ${data.certificate_number}<br>
+                        <strong>Name:</strong> ${data.name}<br>
+                        <strong>Event Name:</strong> ${data.event_name}<br>
+                        <strong>Issue Date:</strong> ${data.issue_date}<br>
+                        <strong>Coordinator Name:</strong> ${data.coordinator_name}<br>
+                        <strong>Event Date:</strong> ${data.event_date}`;
+                } else {
+                    resultDiv.className = 'result not-verified';
+                    resultDiv.innerHTML = `<strong>${data.message}</strong>`;
+                }
+                resultDiv.style.display = 'block';
+            })
+            .catch(error => {
+                alert("Error verifying certificate. Please try again.");
+                console.error('Error:', error);
+                
+                // Hide loading and display error
+                document.getElementById('loading').style.display = 'none';
+            });
+    }
+</script>
+
+</body>
+</html>
